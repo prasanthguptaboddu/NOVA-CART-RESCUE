@@ -1,0 +1,120 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Store {
+  id          String    @id @default(cuid())
+  name        String
+  code        String    @unique
+  city        String
+  locality    String
+  slaMinutes  Int       @default(20)
+  activeOrders Int      @default(0)
+  status      String    @default("ACTIVE")
+  createdAt   DateTime  @default(now())
+  products    Product[]
+  orders      Order[]
+}
+
+model Product {
+  id              String      @id @default(cuid())
+  sku             String      @unique
+  name            String
+  category        String
+  unit            String
+  price           Float
+  shelfStock      Int         @default(0)
+  reservedStock   Int         @default(0)
+  phantomRiskScore Float      @default(0.05) // Risk of physical shelf mismatch
+  storeId         String
+  store           Store       @relation(fields: [storeId], references: [id])
+  orderItems      OrderItem[]
+  substitutions   OrderItem[] @relation("SubstitutedProduct")
+  createdAt       DateTime    @default(now())
+}
+
+model Customer {
+  id                  String         @id @default(cuid())
+  name                String
+  email               String         @unique
+  phone               String
+  locality            String
+  totalOrders         Int            @default(1)
+  hasFrictionHistory  Boolean        @default(false)
+  secondOrderConverted Boolean       @default(false)
+  churnRiskScore      Float          @default(0.2)
+  walletBalanceINR    Float          @default(0.0)
+  createdAt           DateTime       @default(now())
+  orders              Order[]
+  interventions       Intervention[]
+  supportTickets      SupportTicket[]
+}
+
+model Order {
+  id                 String          @id @default(cuid())
+  orderNumber        String          @unique
+  customerId         String
+  customer           Customer        @relation(fields: [customerId], references: [id])
+  storeId            String
+  store              Store           @relation(fields: [storeId], references: [id])
+  status             String          @default("PENDING") // PENDING, PICKING, READY_FOR_DISPATCH, OUT_FOR_DELIVERY, DELIVERED, CANCELLED
+  totalAmount        Float
+  itemCount          Int
+  placedAt           DateTime        @default(now())
+  promisedDeliveryAt DateTime
+  actualDeliveredAt  DateTime?
+  frictionType       String          @default("NONE") // NONE, PHANTOM_STOCKOUT, SLA_BREACH, MISSING_ITEM
+  frictionResolved   Boolean         @default(false)
+  isSecondOrderTarget Boolean        @default(false) // Whether customer is in critical 1st->2nd order conversion window
+  items              OrderItem[]
+  interventions      Intervention[]
+  supportTickets     SupportTicket[]
+}
+
+model OrderItem {
+  id                    String    @id @default(cuid())
+  orderId               String
+  order                 Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId             String
+  product               Product   @relation(fields: [productId], references: [id])
+  quantity              Int
+  unitPrice             Float
+  pickStatus            String    @default("PENDING") // PENDING, PICKED, OUT_OF_STOCK, SUBSTITUTED
+  substitutedProductId  String?
+  substitutedProduct    Product?  @relation("SubstitutedProduct", fields: [substitutedProductId], references: [id])
+}
+
+model Intervention {
+  id               String    @id @default(cuid())
+  orderId          String
+  order            Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  customerId       String
+  customer         Customer  @relation(fields: [customerId], references: [id])
+  type             String    // PREEMPTIVE_SLA_CREDIT, SMART_SUBSTITUTION, NEXT_BASKET_PROMPT, RETENTION_SHIELD
+  title            String
+  description      String
+  costINR          Float     @default(0.0)
+  status           String    @default("PROPOSED") // PROPOSED, ACCEPTED, APPLIED, DECLINED
+  estimatedLtvGain Float     @default(0.0)
+  appliedAt        DateTime?
+  createdAt        DateTime  @default(now())
+}
+
+model SupportTicket {
+  id              String    @id @default(cuid())
+  ticketNumber    String    @unique
+  orderId         String
+  order           Order     @relation(fields: [orderId], references: [id])
+  customerId      String
+  customer        Customer  @relation(fields: [customerId], references: [id])
+  category        String    // MISSING_ITEM, DELAYED_ORDER, DAMAGED_GOODS, WRONG_ITEM
+  sentiment       String    // FRUSTRATED, ANGRY, NEUTRAL
+  status          String    @default("OPEN") // OPEN, RESOLVED_PREEMPTIVE, ESCALATED, CLOSED
+  resolutionCost  Float     @default(0.0)
+  createdAt       DateTime  @default(now())
+}

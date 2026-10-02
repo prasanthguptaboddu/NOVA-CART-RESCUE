@@ -1,0 +1,6 @@
+{
+  "name": "NOVA CART Reliance Engine",
+  "description": "Fulfillment friction diagnostic, real-time inventory risk gate, and 2nd-order retention recovery system for NOVA CART.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

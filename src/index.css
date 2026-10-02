@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Bricolage Grotesque", ui-sans-serif, sans-serif;
+  --font-sans: "Instrument Sans", ui-sans-serif, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-ink: #121110;
+  --color-panel: #1b1a17;
+  --color-panel-2: #23211d;
+  --color-line: #34312b;
+  --color-bone: #ece6da;
+  --color-dust: #9a9284;
+  --color-amber: #f0a43a;
+  --color-signal: #e5604a;
+  --color-mint: #7cc4a3;
+}
+
+html {
+  background: var(--color-ink);
+  color: var(--color-bone);
+  font-family: var(--font-sans);
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 500px at 85% -10%, rgb(240 164 58 / 0.07), transparent 60%),
+    repeating-linear-gradient(0deg, transparent 0 31px, rgb(255 255 255 / 0.018) 31px 32px),
+    var(--color-ink);
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.panel {
+  background: var(--color-panel);
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-dust);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--color-line);
+  transition: transform 120ms ease, background-color 120ms ease, border-color 120ms ease;
+}
+.btn:hover:not(:disabled) { border-color: var(--color-dust); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn:focus-visible { outline: 2px solid var(--color-amber); outline-offset: 2px; }
+.btn-amber { background: var(--color-amber); color: var(--color-ink); border-color: var(--color-amber); }
+.btn-amber:hover:not(:disabled) { background: #f6b85c; border-color: #f6b85c; }
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-panel) 0%, var(--color-panel-2) 50%, var(--color-panel) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 6px;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+input[type="range"] { accent-color: var(--color-amber); }
